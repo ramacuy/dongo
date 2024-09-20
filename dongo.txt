@@ -1,0 +1,63 @@
+    <table class="table table-bordered" id="datatable" width="100%" cellspacing="0">
+        <tr>
+            <th>No</th>
+            <th>Gambar</th>
+            <th>Judul</th>
+            <th>user</th>
+            <th>Ulasan</th>
+            <th>Rating</th>
+            <?php
+            if ($user_level == 'administrator' || $user_level == 'petugas') {
+                ?>
+                <th>Aksi</th>
+                <?php
+            } else {
+                ?>
+
+                <?php
+            }
+            ?>
+        </tr>
+        <?php
+        // Mengambil data buku dari database dan menampilkannya di tabel
+        $i = 1;
+        $query = mysqli_query($koneksi, "SELECT ulasanbuku.*, user.NamaLengkap AS NamaLengkap, buku.Judul AS Judul, buku.gambar AS gambar
+                                         FROM ulasanbuku
+                                         LEFT JOIN buku ON ulasanbuku.BukuID = buku.BukuID
+                                         LEFT JOIN user ON ulasanbuku.UserID = user.UserID");
+
+        if (!$query) {
+            die('Error: ' . mysqli_error($koneksi));
+        }
+
+        while ($data = mysqli_fetch_array($query)) {
+            $gambarpath = 'assets/img/' . $data['gambar'];
+            ?>
+            <tr>
+                <td><?php echo $i++; ?></td>
+                <td>
+                    <?php if (!empty($data['gambar']) && file_exists($gambarpath)) { ?>
+                        <img src="<?php echo $gambarpath ?>" alt="gambar" width="100">
+                    <?php } else { ?>
+                        <img src="assets/img/default.jpg" alt="gambar" width="100">
+                    <?php } ?>
+                </td>
+                <td><?php echo $data['Judul']; ?></td>
+                <td><?php echo $data['NamaLengkap']; ?></td>
+                <td><?php echo $data['Ulasan'] ? $data['Ulasan'] : 'Belum ada ulasan'; ?></td>
+                <td><?php echo $data['Rating'] ? $data['Rating'] : 'Belum ada rating'; ?></td>
+                <td>
+                    <?php
+                    if ($user_level == 'administrator' || $user_level == 'petugas') {
+                        ?>
+                        <a onclick="return confirm('Anda yakin ingin menghapus ulasan ini?')" class="btn btn-danger"
+                            href="?page=ulasan_hapus&id=<?php echo $data['UlasanID']; ?>">Hapus Ulasan</a>
+                        <?php
+                    }
+                    ?>
+                </td>
+            </tr>
+            <?php
+        }
+        ?>
+    </table>
